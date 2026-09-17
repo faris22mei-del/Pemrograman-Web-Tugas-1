@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ShopKu &mdash; Belanja Online Murah, Gratis Ongkir</title>
+<title>Checkout &mdash; ShopKu</title>
 <meta name="description" content="ShopKu &mdash; online shop ala Shopee. Flash sale, gratis ongkir, pembayaran aman. Tugas Pemrograman Web 1." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,7 +12,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23EE4D2D'/><text x='50' y='68' font-size='58' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>S</text></svg>" />
 </head>
 <body>
-<a class="skip-link" href="#produk">Lewati ke produk</a>
+<a class="skip-link" href="#main">Lewati ke konten</a>
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -73,76 +73,27 @@
       </button>
     </div>
   </div>
-  <nav class="mainnav" aria-label="Navigasi utama"><div class="container mainnav-inner"><a href="index.html" aria-current="page">Beranda</a><a href="produk.html">Produk</a><a href="checkout.html">Checkout</a></div></nav>
+  <nav class="mainnav" aria-label="Navigasi utama"><div class="container mainnav-inner"><a href="index.html">Beranda</a><a href="produk.html">Produk</a><a href="checkout.html" aria-current="page">Checkout</a></div></nav>
 </header>
 
 <main id="main">
-  <!-- HERO -->
-  <section class="hero container" aria-label="Promo utama">
-    <div class="carousel" id="carousel">
-      <div class="slides" id="slides">
-        <div class="slide s1">
-          <div><p class="pill">9.9 SUPER SALE</p><h1>Diskon s.d. 90% + Gratis Ongkir</h1><p>Flash sale tiap jam 12.00 &amp; 20.00. Serbu sekarang!</p><button type="button" class="btn btn-light" data-scroll="#flash">Serbu Flash Sale</button></div>
-          <div class="slide-art" aria-hidden="true">%</div>
-        </div>
-        <div class="slide s2">
-          <div><p class="pill">GRATIS ONGKIR RP0</p><h1>Belanja Tanpa Mikir Ongkir</h1><p>Klaim voucher tiap hari, min. belanja Rp30rb.</p><button type="button" class="btn btn-light" data-scroll="#produk">Mulai Belanja</button></div>
-          <div class="slide-art" aria-hidden="true">&#8599;</div>
-        </div>
-        <div class="slide s3">
-          <div><p class="pill">PAYDAY SALE</p><h1>Elektronik &amp; Fashion Turun Harga</h1><p>Cicilan 0% + garansi 7 hari pengembalian.</p><button type="button" class="btn btn-light" data-scroll="#kategori">Lihat Kategori</button></div>
-          <div class="slide-art" aria-hidden="true">&#9733;</div>
-        </div>
+  <section class="container block" aria-label="Checkout">
+    <p class="crumb"><a class="link" href="index.html">Beranda</a> / Checkout</p>
+    <div class="block-head"><h2>Checkout</h2></div>
+    <div class="co-grid">
+      <div>
+        <h3>Keranjangmu</h3>
+        <div id="coItems"></div>
       </div>
-      <button type="button" class="car-btn prev" id="carPrev" aria-label="Slide sebelumnya">&#8249;</button>
-      <button type="button" class="car-btn next" id="carNext" aria-label="Slide berikutnya">&#8250;</button>
-      <div class="dots" id="carDots" role="tablist" aria-label="Navigasi banner"></div>
-    </div>
-    <div class="hero-side">
-      <div class="mini-banner b1"><strong>Voucher Rp20rb</strong><span>Klaim sekarang</span></div>
-      <div class="mini-banner b2"><strong>Cashback 10%</strong><span>Bayar pakai ShopPay</span></div>
-    </div>
-  </section>
-
-  <!-- KATEGORI -->
-  <section id="kategori" class="container block" aria-label="Kategori">
-    <div class="block-head"><h2>Kategori Pilihan</h2><a href="#produk" class="link">Lihat Semua &#8250;</a></div>
-    <div class="cat-grid" id="catGrid"></div>
-  </section>
-
-  <!-- FLASH SALE -->
-  <section id="flash" class="container block flash" aria-label="Flash sale">
-    <div class="block-head flash-head">
-      <h2><span class="bolt" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span> FLASH SALE <span id="countdown" class="countdown" title="Waktu tersisa flash sale">02:00:00</span></h2>
-      <a href="#produk" class="link">Lihat Semua &#8250;</a>
-    </div>
-    <div class="h-scroll" id="flashRow"></div>
-  </section>
-
-  <!-- PRODUK -->
-  <section id="produk" class="container block" aria-label="Rekomendasi produk">
-    <div class="block-head wrap">
-      <h2>Rekomendasi Untukmu</h2>
-      <p id="resultInfo" class="muted" aria-live="polite"></p>
-    </div>
-    <div class="toolbar">
-      <div class="chips" id="catChips" role="group" aria-label="Filter kategori"></div>
-      <div class="sort">
-        <label for="sortSel">Urutkan</label>
-        <select id="sortSel">
-          <option value="populer">Paling Populer</option>
-          <option value="termurah">Harga Termurah</option>
-          <option value="termahal">Harga Termahal</option>
-          <option value="rating">Rating Tertinggi</option>
-          <option value="diskon">Diskon Terbesar</option>
-        </select>
+      <div class="co-side">
+        <div class="row"><span>Subtotal</span><strong id="coTotal">Rp0</strong></div>
+        <p class="muted small" id="coShip"></p>
+        <button id="coPay" type="button" class="btn btn-primary btn-block">Lanjut ke Pembayaran</button>
+        <a href="produk.html" class="btn btn-outline btn-block">Tambah Barang</a>
       </div>
     </div>
-    <div class="grid" id="productGrid"></div>
-    <div class="center"><button id="loadMore" type="button" class="btn btn-outline">Muat Lebih Banyak</button></div>
   </section>
 
-  <!-- KEUNGGULAN -->
   <section class="container block perks" aria-label="Keunggulan">
     <div class="perk"><strong>Gratis Ongkir</strong><span>Min. belanja Rp30rb ke seluruh Indonesia</span></div>
     <div class="perk"><strong>100% Ori</strong><span>Garansi uang kembali jika palsu</span></div>
@@ -154,7 +105,7 @@
 <footer class="footer">
   <div class="container foot-grid">
     <div><h3>ShopKu</h3><p>Online shop murah ala Shopee untuk Tugas Pemrograman Web 1. Dibangun dengan HTML, CSS, dan JavaScript murni.</p></div>
-    <div><h4>Belanja</h4><a href="#kategori">Kategori</a><a href="#flash">Flash Sale</a><a href="#produk">Rekomendasi</a></div>
+    <div><h4>Belanja</h4><a href="index.html#kategori">Kategori</a><a href="index.html#flash">Flash Sale</a><a href="produk.html">Semua Produk</a></div>
     <div><h4>Bantuan</h4><a href="#">Lacak Pesanan</a><a href="#">Pengembalian</a><a href="#">Hubungi Kami</a></div>
     <div><h4>Ikuti Kami</h4><a href="#">Instagram</a><a href="#">TikTok</a><a href="#">YouTube</a></div>
   </div>

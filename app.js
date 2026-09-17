@@ -69,6 +69,7 @@ state.cart = validCart(loadJSON("shopku_cart", []));
 state.wish = validWish(loadJSON("shopku_wish", []));
 
 function $(s){ return document.querySelector(s); }
+function on(id, ev, fn){ var el = document.getElementById(id); if(el) el.addEventListener(ev, fn); }
 function $all(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
 function rp(n){ return "Rp" + Number(n).toLocaleString("id-ID"); }
 function disc(p){ if(!p.old || p.old <= p.price) return 0; return Math.round((1 - p.price/p.old)*100); }
@@ -99,13 +100,15 @@ function toast(msg){
 
 /* ---------- KATEGORI ---------- */
 function renderCats(){
-  $("#catGrid").innerHTML = CATS.map(function(c){
+  var cg = $("#catGrid");
+  if(cg) cg.innerHTML = CATS.map(function(c){
     return '<button type="button" class="cat" data-cat="' + esc(c.n) + '" aria-label="Kategori ' + esc(c.n) + '">' +
       '<span class="ic" style="background:' + c.c + '"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + c.i + '"/></svg></span>' +
       '<span class="lbl">' + esc(c.n) + '</span></button>';
   }).join("");
   var chips = ["Semua"].concat(CATS.map(function(c){ return c.n; }));
-  $("#catChips").innerHTML = chips.map(function(c){
+  var cc = $("#catChips");
+  if(cc) cc.innerHTML = chips.map(function(c){
     return '<button type="button" class="chip' + (state.cat===c ? " on" : "") + '" data-chip="' + esc(c) + '" aria-pressed="' + (state.cat===c) + '">' + esc(c) + '</button>';
   }).join("");
 }
@@ -146,12 +149,15 @@ function cardHTML(p){
 }
 function renderProducts(){
   var list = filtered();
-  $("#resultInfo").textContent = list.length
+  var ri = $("#resultInfo");
+  if(ri) ri.textContent = list.length
     ? (list.length + " produk ditemukan" + (state.q ? ' untuk \u201C' + state.q + '\u201D' : ""))
     : "Produk tidak ditemukan. Coba kata kunci lain.";
-  $("#productGrid").innerHTML = list.slice(0, state.shown).map(cardHTML).join("") ||
+  var pg = $("#productGrid");
+  if(pg) pg.innerHTML = list.slice(0, state.shown).map(cardHTML).join("") ||
     '<div class="empty">Tidak ada produk. <button type="button" class="btn btn-outline" id="resetF">Reset Filter</button></div>';
-  $("#loadMore").style.display = list.length > state.shown ? "" : "none";
+  var lm = $("#loadMore");
+  if(lm) lm.style.display = list.length > state.shown ? "" : "none";
   var rf = $("#resetF");
   if(rf) rf.onclick = resetFilter;
 }
@@ -162,6 +168,7 @@ function resetFilter(){
   renderAll();
 }
 function renderFlash(){
+  if(!$("#flashRow")) return;
   var list = PRODUCTS.filter(function(p){ return p.flash; });
   $("#flashRow").innerHTML = list.map(function(p){
     return '<div class="f-card" data-open="' + p.id + '" style="cursor:pointer" role="button" tabindex="0" aria-label="Flash sale: ' + esc(p.name) + '">' +
@@ -170,7 +177,7 @@ function renderFlash(){
       '<div class="bar" aria-hidden="true"><i style="width:' + Math.min(95, disc(p)+40) + '%"></i></div><div class="small muted">Terjual ' + esc(p.sold) + '</div></div></div>';
   }).join("");
 }
-function renderAll(){ renderCats(); renderProducts(); renderFlash(); updateBadges(); }
+function renderAll(){ renderCats(); renderProducts(); renderFlash(); updateBadges(); renderCo(); }
 
 /* ---------- WISHLIST & CART ---------- */
 function cartTotal(){
@@ -181,13 +188,13 @@ function cartTotal(){
 }
 function updateBadges(){
   var n = state.cart.reduce(function(a,c){ return a + c.qty; }, 0);
-  $("#cartCount").textContent = n;
-  $("#cartTitleCount").textContent = n;
-  $("#wishCount").hidden = state.wish.length === 0;
-  $("#wishCount").textContent = state.wish.length;
   var total = cartTotal();
-  $("#cartTotal").textContent = rp(total);
-  $("#shipNote").textContent = total >= 30000
+  var el;
+  el = $("#cartCount"); if(el) el.textContent = n;
+  el = $("#cartTitleCount"); if(el) el.textContent = n;
+  el = $("#wishCount"); if(el){ el.hidden = state.wish.length === 0; el.textContent = state.wish.length; }
+  el = $("#cartTotal"); if(el) el.textContent = rp(total);
+  el = $("#shipNote"); if(el) el.textContent = total >= 30000
     ? "Selamat! Kamu dapat GRATIS ONGKIR."
     : "Belanja " + rp(30000 - total) + " lagi untuk gratis ongkir";
 }
@@ -206,6 +213,7 @@ function addToCart(id, qty, varian){
 }
 function renderCart(){
   var box = $("#cartItems");
+  if(!box){ renderCo(); return; }
   if(!state.cart.length){
     box.innerHTML = '<div class="empty"><p>Keranjang masih kosong.</p><p class="small">Yuk, cari barang impianmu!</p></div>';
     return;
@@ -221,13 +229,40 @@ function renderCart(){
       '<button type="button" class="icon-btn cart-del" data-del="' + i + '" aria-label="Hapus dari keranjang">&times;</button>' +
     '</div>';
   }).join("");
+  renderCo();
+}
+
+/* ---------- RINGKASAN CHECKOUT (halaman checkout.html) ---------- */
+function renderCo(){
+  var box = $("#coItems");
+  if(!box) return;
+  if(!state.cart.length){
+    box.innerHTML = '<div class="empty"><p>Keranjang masih kosong.</p><p class="small"><a class="link" href="produk.html">Lihat produk</a></p></div>';
+  } else {
+    box.innerHTML = state.cart.map(function(c, i){
+      var p = findP(c.id);
+      if(!p) return "";
+      return '<div class="cart-item">' +
+        '<img src="' + p.img + '" alt="' + esc(p.name) + '" onerror="this.onerror=null;this.src=\'https://picsum.photos/seed/fallback' + p.id + '/100/100\'"/>' +
+        '<div><div class="t">' + esc(p.name.slice(0, 40)) + '</div><div class="small muted">' + esc(c.varian) + '</div>' +
+        '<div class="price">' + rp(p.price) + '</div>' +
+        '<div class="stepper" style="margin-top:6px"><button type="button" data-dec="' + i + '" aria-label="Kurangi">-</button><span>' + c.qty + '</span><button type="button" data-inc="' + i + '" aria-label="Tambah">+</button></div></div>' +
+        '<button type="button" class="icon-btn cart-del" data-del="' + i + '" aria-label="Hapus dari keranjang">&times;</button>' +
+      '</div>';
+    }).join("");
+  }
+  var t = cartTotal();
+  var ct = $("#coTotal"); if(ct) ct.textContent = rp(t);
+  var cs = $("#coShip"); if(cs) cs.textContent = t >= 30000
+    ? "Selamat! Kamu dapat GRATIS ONGKIR."
+    : "Belanja " + rp(30000 - t) + " lagi untuk gratis ongkir";
 }
 
 /* ---------- DRAWER & MODAL ---------- */
 function openCart(){ renderCart(); $("#cartDrawer").hidden = false; $("#overlay").hidden = false; document.body.style.overflow = "hidden"; }
 function closeAll(){
-  $("#cartDrawer").hidden = true; $("#pModal").hidden = true; $("#cModal").hidden = true;
-  $("#overlay").hidden = true; $("#suggestBox").hidden = true;
+  var ids = ["cartDrawer", "pModal", "cModal", "overlay", "suggestBox"];
+  for(var k = 0; k < ids.length; k++){ var d = document.getElementById(ids[k]); if(d) d.hidden = true; }
   document.body.style.overflow = "";
 }
 function openProduct(id){
@@ -256,7 +291,7 @@ document.addEventListener("click", function(e){
   var t = e.target;
   function q(sel){ return t.closest ? t.closest(sel) : null; }
   var el;
-  if((el = q("[data-cat]"))){ state.cat = el.dataset.cat; state.shown = 10; renderAll(); document.querySelector("#produk").scrollIntoView({behavior:"smooth"}); return; }
+  if((el = q("[data-cat]"))){ state.cat = el.dataset.cat; state.shown = 10; renderAll(); var _pp = document.querySelector("#produk"); if(_pp) _pp.scrollIntoView({behavior:"smooth"}); return; }
   if((el = q("[data-chip]"))){ state.cat = el.dataset.chip; state.shown = 10; renderAll(); return; }
   if((el = q("[data-add]"))){ e.stopPropagation(); addToCart(parseInt(el.dataset.add, 10)); return; }
   if((el = q("[data-fav]"))){
@@ -307,27 +342,27 @@ document.addEventListener("keydown", function(e){
   }
 });
 
-$("#cartBtn").onclick = openCart;
-$("#closeCart").onclick = closeAll;
-$("#overlay").onclick = closeAll;
-$("#closeModal").onclick = closeAll;
-$("#closeCheckout").onclick = closeAll;
-$("#clearCart").onclick = function(){ state.cart = []; save(); updateBadges(); renderCart(); };
-$("#qMin").onclick = function(){ state.qty = Math.max(1, state.qty - 1); $("#qVal").textContent = state.qty; };
-$("#qPlus").onclick = function(){
+on("cartBtn", "click", openCart);
+on("closeCart", "click", closeAll);
+on("overlay", "click", closeAll);
+on("closeModal", "click", closeAll);
+on("closeCheckout", "click", closeAll);
+on("clearCart", "click", function(){ state.cart = []; save(); updateBadges(); renderCart(); });
+on("qMin", "click", function(){ state.qty = Math.max(1, state.qty - 1); $("#qVal").textContent = state.qty; });
+on("qPlus", "click", function(){
   var p = findP(state.modalId);
   state.qty = Math.min(p ? p.stock : 99, state.qty + 1);
   $("#qVal").textContent = state.qty;
-};
-$("#mAdd").onclick = function(){ if(state.modalId===null) return; addToCart(state.modalId, state.qty, state.modalVarian); closeAll(); openCart(); };
-$("#mBuy").onclick = function(){ if(state.modalId===null) return; addToCart(state.modalId, state.qty, state.modalVarian); closeAll(); startCheckout(); };
-$("#loadMore").onclick = function(){ state.shown += 10; renderProducts(); };
-$("#sortSel").onchange = function(e){ state.sort = e.target.value; renderProducts(); };
-$("#wishBtn").onclick = function(){
+});
+on("mAdd", "click", function(){ if(state.modalId===null) return; addToCart(state.modalId, state.qty, state.modalVarian); closeAll(); openCart(); });
+on("mBuy", "click", function(){ if(state.modalId===null) return; addToCart(state.modalId, state.qty, state.modalVarian); closeAll(); startCheckout(); });
+on("loadMore", "click", function(){ state.shown += 10; renderProducts(); });
+on("sortSel", "change", function(e){ state.sort = e.target.value; renderProducts(); });
+on("wishBtn", "click", function(){
   toast(state.wish.length
     ? (state.wish.length + " barang di wishlist")
     : "Wishlist kosong - ketuk ikon hati di produk favoritmu");
-};
+});
 
 /* search + saran (pakai ID, bukan nama mentah -> aman dari tanda kutip) */
 function doSearch(v){ state.q = String(v).trim(); state.shown = 10; renderProducts(); }
@@ -348,22 +383,22 @@ function pickSuggest(id){
   $("#suggestBox").hidden = true;
   doSearch(p.name);
 }
-$("#searchBtn").onclick = function(){ doSearch($("#searchInput").value); };
-$("#searchInput").addEventListener("input", function(e){ updateSuggest(e.target.value); doSearch(e.target.value); });
-$("#searchInput").addEventListener("keydown", function(e){ if(e.key === "Enter"){ $("#suggestBox").hidden = true; doSearch(e.target.value); } });
-$("#suggestBox").addEventListener("click", function(e){
+on("searchBtn", "click", function(){ doSearch($("#searchInput").value); });
+on("searchInput", "input", function(e){ updateSuggest(e.target.value); doSearch(e.target.value); });
+on("searchInput", "keydown", function(e){ if(e.key === "Enter"){ $("#suggestBox").hidden = true; doSearch(e.target.value); } });
+on("suggestBox", "click", function(e){
   var li = e.target.closest ? e.target.closest("[data-sid]") : null;
   if(li) pickSuggest(parseInt(li.dataset.sid, 10));
 });
-$("#suggestBox").addEventListener("keydown", function(e){
+on("suggestBox", "keydown", function(e){
   var li = e.target.closest ? e.target.closest("[data-sid]") : null;
   if(li && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); pickSuggest(parseInt(li.dataset.sid, 10)); }
 });
-$("#searchBtnM").onclick = function(){ doSearch($("#searchInputM").value); document.querySelector("#produk").scrollIntoView({behavior:"smooth"}); };
-$("#searchInputM").addEventListener("keydown", function(e){
-  if(e.key === "Enter"){ doSearch(e.target.value); document.querySelector("#produk").scrollIntoView({behavior:"smooth"}); }
+on("searchBtnM", "click", function(){ doSearch($("#searchInputM").value); var _pp = document.querySelector("#produk"); if(_pp) _pp.scrollIntoView({behavior:"smooth"}); });
+on("searchInputM", "keydown", function(e){
+  if(e.key === "Enter"){ doSearch(e.target.value); var _pp = document.querySelector("#produk"); if(_pp) _pp.scrollIntoView({behavior:"smooth"}); }
 });
-$("#searchInputM").addEventListener("input", function(e){ doSearch(e.target.value); });
+on("searchInputM", "input", function(e){ doSearch(e.target.value); });
 
 /* checkout */
 function startCheckout(){
@@ -379,8 +414,9 @@ function startCheckout(){
   $("#cModal").hidden = false; $("#overlay").hidden = false;
   document.body.style.overflow = "hidden";
 }
-$("#checkoutBtn").onclick = startCheckout;
-$("#placeOrder").onclick = function(){
+on("checkoutBtn", "click", startCheckout);
+on("coPay", "click", startCheckout);
+on("placeOrder", "click", function(){
   var nama = $("#fNama").value.trim(), al = $("#fAlamat").value.trim(), err = $("#formErr");
   if(nama.length < 3){ err.hidden = false; err.textContent = "Isi nama penerima (min. 3 huruf)."; return; }
   if(al.length < 10){ err.hidden = false; err.textContent = "Alamat kurang lengkap (min. 10 karakter)."; return; }
@@ -388,21 +424,22 @@ $("#placeOrder").onclick = function(){
   $("#orderId").textContent = "SK" + Date.now().toString().slice(-8);
   $("#checkoutMain").hidden = true; $("#orderSuccess").hidden = false;
   state.cart = []; save(); updateBadges(); renderCart();
-};
-$("#okOrder").onclick = closeAll;
-$("#topNotif").onclick = function(e){ e.preventDefault(); toast("Ada 3 voucher baru menunggumu!"); };
+});
+on("okOrder", "click", closeAll);
+on("topNotif", "click", function(e){ e.preventDefault(); toast("Ada 3 voucher baru menunggumu!"); });
 
 /* carousel */
 var slide = 0; var N = 3;
 function go(i){
+  if(!$("#slides") || !$("#carDots")) return;
   slide = ((i % N) + N) % N;
   $("#slides").style.transform = "translateX(-" + (slide * 100) + "%)";
   $("#carDots").innerHTML = [0, 1, 2].map(function(k){
     return '<button type="button" role="tab" aria-selected="' + (k===slide) + '" aria-label="Banner ' + (k+1) + '" class="' + (k===slide ? "on" : "") + '" data-d="' + k + '"></button>';
   }).join("");
 }
-$("#carPrev").onclick = function(){ go(slide - 1); };
-$("#carNext").onclick = function(){ go(slide + 1); };
+on("carPrev", "click", function(){ go(slide - 1); });
+on("carNext", "click", function(){ go(slide + 1); });
 setInterval(function(){ if(!document.hidden) go(slide + 1); }, 5000);
 
 /* countdown flash 2 jam */
@@ -410,7 +447,7 @@ var sec = 2 * 3600;
 setInterval(function(){
   sec = sec > 0 ? sec - 1 : 2 * 3600;
   function pad(n){ return String(n).padStart(2, "0"); }
-  $("#countdown").textContent = pad(Math.floor(sec/3600)) + ":" + pad(Math.floor(sec % 3600 / 60)) + ":" + pad(sec % 60);
+  var cd = $("#countdown"); if(cd) cd.textContent = pad(Math.floor(sec/3600)) + ":" + pad(Math.floor(sec % 3600 / 60)) + ":" + pad(sec % 60);
 }, 1000);
 
 /* init */

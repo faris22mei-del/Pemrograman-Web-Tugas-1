@@ -232,3 +232,16 @@ input,select,textarea{font-family:inherit;font-size:15px}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* NAV + SUBPAGES */
+.mainnav{background:rgba(0,0,0,.14)}
+.mainnav-inner{display:flex;gap:6px}
+.mainnav a{color:#ffe2d8;font-weight:800;font-size:14px;padding:10px 14px;border-radius:8px 8px 0 0}
+.mainnav a:hover{color:#fff;background:rgba(255,255,255,.16)}
+.mainnav a[aria-current="page"]{background:#fff;color:var(--primary)}
+.crumb{color:var(--muted);font-size:13px;margin:0 0 2px}
+.co-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+.co-grid h3{margin:4px 0 10px}
+.co-side{border:1.5px solid var(--border);border-radius:12px;padding:16px;display:grid;gap:10px;position:sticky;top:96px;background:#fff}
+.btn-block{display:block;text-align:center}
+@media(max-width:768px){.co-grid{grid-template-columns:1fr}.co-side{position:static}}
